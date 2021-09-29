@@ -1,6 +1,8 @@
 const Medicine = require("../models/medicine");
 const MedicineIntake = require("../models/medicineIntake");
 const User = require("../models/user");
+const mongoose = require("mongoose");
+const _ = require("lodash");
 
 exports.createMedicineIntake = async (req, res) => {
   req.body.startDate = new Date(req.body.startDate).toLocaleString();
@@ -22,8 +24,11 @@ exports.createMedicineIntake = async (req, res) => {
 
 exports.takeMedicine = async (req, res) => {
   req.body.medicineId = req.params.id;
+  req.body.currentDate = new Date().toLocaleString();
 
-  const validMedicineId = await Medicine.findOne(req.params.id);
+  const validMedicineId = await Medicine.findOne(
+    mongoose.Types.ObjectId(req.params.id)
+  );
 
   if (validMedicineId) {
     await new MedicineIntake(req.body)
@@ -56,16 +61,23 @@ exports.getMedicineIntakeData = async (req, res) => {
   }
 
   const medicinesNotTaken = [];
+  // console.log(data);
+  const arr2 = arr.filter((item) => item != null);
+  console.log("arr2", arr2);
+  console.log("data", data);
+  const medicinesTaken = [];
 
-  const medicinesTaken = data?.filter((o) =>
-    arr?.some((i) => {
-      if (o?._id?.toString() == i?.medicineId?.toString()) {
-        return true;
-      } else {
-        medicinesNotTaken.push(o);
+  arr2?.map((o) =>
+    data?.map((i) => {
+      if (o?.medicineId?.toString() == i?._id?.toString()) {
+        medicinesTaken.push(i);
       }
     })
   );
 
-  return res.status(200).json({ medicinesTaken, medicinesNotTaken });
+  for (var i = 0; i < medicinesTaken.length; i++) {
+    _.remove(data, medicinesTaken[i]);
+  }
+
+  return res.status(200).json({ medicinesTaken, medicinesNotTaken: data });
 };
