@@ -1,10 +1,11 @@
+const { request } = require("express");
 const { signAccessToken } = require("../helpers/jwtHelper");
 const User = require("../models/user");
 
 exports.register = async (req, res) => {
   const emailRegex =
     /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  if (emailRegex.test(req.body.email)) {
+  if (emailRegex.test(req.body.email)&&req.body.password.length>6) {
     await new User(req.body)
       .save()
       .then(() =>
